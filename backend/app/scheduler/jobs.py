@@ -5,8 +5,8 @@ Court Data Sync Pipeline - Real Current Case Data
 import logging
 from datetime import datetime
 from sqlalchemy.orm import Session
-from app.database import SessionLocal
-from app.models import Case, Court, Judgment, CourtEnum
+from ..database import SessionLocal
+from ..models import Case, Court, Judgment, CourtEnum
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -224,7 +224,7 @@ def create_courts(db: Session):
 
 def clear_cases(db: Session) -> int:
     """Clear old case data"""
-    from app.models import Document, Judgment
+    from ..models import Document, Judgment
     
     # Delete in correct order due to foreign keys
     doc_count = db.query(Document).count()
@@ -293,7 +293,7 @@ def populate_cases(db: Session) -> int:
                 db.flush()
                 
                 # Create document record (required for "verified" status)
-                from app.models import Document
+                from ..models import Document
                 document = Document(
                     case_id=case.id,
                     judgment_id=judgment.id,
@@ -367,8 +367,8 @@ def sync_all_courts():
 
 def initialize_db():
     """Initialize database tables"""
-    from app.database import engine
-    from app.models import Base
+    from ..database import engine
+    from ..models import Base
     Base.metadata.create_all(bind=engine)
     logger.info("Database initialized")
 

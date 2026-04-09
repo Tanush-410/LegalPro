@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import logging
 import time
-from app.scrapers.base_scraper import BaseScraper
+from .base_scraper import BaseScraper
 
 logger = logging.getLogger(__name__)
 

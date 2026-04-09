@@ -9,8 +9,8 @@ This module provides a factory function that automatically selects the best scra
 """
 import os
 from datetime import datetime
-from app.scrapers.aironline_scraper import AIROnlineScraper
-from app.scrapers.enhanced_indian_kanoon import EnhancedIndianKanoonScraper
+from .aironline_scraper import AIROnlineScraper
+from .enhanced_indian_kanoon import EnhancedIndianKanoonScraper
 import logging
 
 logger = logging.getLogger(__name__)

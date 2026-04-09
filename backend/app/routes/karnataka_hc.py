@@ -324,7 +324,7 @@ async def trigger_sync():
     This scrapes the website and populates Supabase
     """
     try:
-        from app.scheduler.karnataka_hc_jobs import sync_karnataka_hc_judgments
+        from ..scheduler.karnataka_hc_jobs import sync_karnataka_hc_judgments
         
         logger.info("🚀 Manual sync triggered")
         result = sync_karnataka_hc_judgments()

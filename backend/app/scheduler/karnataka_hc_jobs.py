@@ -10,8 +10,8 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 import requests
 from sqlalchemy.orm import Session
-from app.database import SessionLocal
-from app.models import Case, Judgment
+from ..database import SessionLocal
+from ..models import Case, Judgment
 import json
 
 logging.basicConfig(level=logging.INFO)
@@ -40,7 +40,7 @@ def sync_from_karnataka_hc():
         try:
             # Primary source: e-courts portal
             logger.info("📡 Attempting sync from e-courts portal...")
-            from app.scrapers.ecourts_enhanced import EcourtsEnhancedScraper
+            from ..scrapers.ecourts_enhanced import EcourtsEnhancedScraper
             
             scraper = EcourtsEnhancedScraper()
             results = scraper.scrape_all_courts()
@@ -77,7 +77,7 @@ def sync_supabase_daily():
         logger.info("="*70)
         
         # Import the sync function
-        from app.routes.supabase_sync import sync_to_supabase_internal
+        from ..routes.supabase_sync import sync_to_supabase_internal
         result = sync_to_supabase_internal()
         
         logger.info("="*70)
@@ -180,7 +180,7 @@ except ImportError:
 
 # Import Supabase manager
 try:
-    from app.supabase_manager import (
+    from ..supabase_manager import (
         get_supabase_manager,
         normalize_judgment_for_supabase,
         SUPABASE_AVAILABLE

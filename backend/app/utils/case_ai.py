@@ -8,7 +8,7 @@ from collections import Counter
 from datetime import datetime
 from typing import Dict, List, Optional, Sequence, Tuple
 
-from app.models import Case, Judgment
+from ..models import Case, Judgment
 
 
 STOP_WORDS = {

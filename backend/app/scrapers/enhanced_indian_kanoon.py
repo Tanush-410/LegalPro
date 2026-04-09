@@ -14,7 +14,7 @@ import time
 import os
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
-from app.scrapers.base_scraper import BaseScraper
+from .base_scraper import BaseScraper
 
 logger = logging.getLogger(__name__)
 

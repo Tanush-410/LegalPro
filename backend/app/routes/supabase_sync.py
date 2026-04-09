@@ -21,9 +21,9 @@ def sync_to_supabase_internal():
             logger.warning("⚠️ Supabase credentials not configured")
             return {"status": "skipped", "message": "Supabase credentials not configured"}
         
-        from app.database import SessionLocal
-        from app.models import Case, Court
-        from app.supabase_manager import SupabaseManager
+        from ..database import SessionLocal
+        from ..models import Case, Court
+        from ..supabase_manager import SupabaseManager
         
         logger.info("📡 Starting Supabase sync...")
         sm = SupabaseManager()
@@ -113,7 +113,7 @@ async def check_supabase_connection():
                 "message": "Set SUPABASE_URL and SUPABASE_ANON_KEY environment variables"
             }
         
-        from app.supabase_manager import SupabaseManager
+        from ..supabase_manager import SupabaseManager
         sm = SupabaseManager()
         
         return {

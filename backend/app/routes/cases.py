@@ -27,7 +27,7 @@ async def list_cases(
 ):
     """List cases with optional filters - defaults to all cases"""
     
-    from app.models import Court
+    from ..models import Court
     
     query = (
         db.query(Case)
@@ -40,7 +40,7 @@ async def list_cases(
     
     if court_level:
         # Accept both enum values and full string equivalents
-        from app.models import CourtEnum
+        from ..models import CourtEnum
         level_map = {
             'SUPREME': CourtEnum.SUPREME.value,
             'HIGH': CourtEnum.HIGH.value,
