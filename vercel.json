@@ -1,0 +1,14 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": ".",
+  "env": {
+    "REACT_APP_API_URL": "@api_url",
+    "REACT_APP_GOOGLE_CLIENT_ID": "@google_client_id"
+  },
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/dashboard/index.html"
+    }
+  ]
+}

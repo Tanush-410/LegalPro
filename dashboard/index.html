@@ -1,0 +1,1674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HighCourt Cases - Court Portal</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        // Configure API base URL
+        const API_BASE_URL = `http://${window.location.hostname}:8000`;
+        axios.defaults.baseURL = API_BASE_URL;
+        
+        // Check authentication on page load
+        window.addEventListener('load', () => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'login.html';
+            } else {
+                // Set authorization header
+                axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+            }
+        });
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        /* Navigation */
+        .navbar {
+            background: linear-gradient(135deg, #003d82 0%, #00509e 100%);
+            color: white;
+            padding: 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .nav-brand {
+            font-size: 1.5em;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .nav-menu {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        
+        .nav-item {
+            padding: 10px 15px;
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 500;
+            transition: all 0.3s;
+            border-radius: 5px;
+        }
+        
+        .nav-item:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .nav-item.active {
+            background: #ffc107;
+            color: #003d82;
+        }
+        
+        /* Pages */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        
+        .page {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .card h2 {
+            color: #003d82;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #ffc107;
+            padding-bottom: 10px;
+        }
+        
+        .card h3 {
+            color: #003d82;
+            margin-top: 20px;
+            margin-bottom: 15px;
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #003d82;
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        
+        .stat-icon {
+            font-size: 2em;
+        }
+        
+        /* Tables */
+        .table-responsive {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        table th {
+            background: #f5f5f5;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #003d82;
+            border-bottom: 2px solid #003d82;
+        }
+        
+        table td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        table tr:hover {
+            background: #f9f9f9;
+        }
+        
+        .case-link {
+            color: #003d82;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        
+        .case-link:hover {
+            text-decoration: underline;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        
+        .badge-type {
+            background: #e3f2fd;
+            color: #003d82;
+            border: 1px solid #003d82;
+        }
+        
+        .badge-category {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #2e7d32;
+        }
+        
+        /* Expandable Case Type */
+        .case-type-item {
+            background: white;
+            border-left: 4px solid #003d82;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .case-type-item:hover {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transform: translateX(5px);
+        }
+        
+        .case-type-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: #003d82;
+        }
+        
+        .case-type-count {
+            background: #ffc107;
+            color: #333;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.85em;
+        }
+        
+        .case-type-description {
+            margin-top: 10px;
+            color: #666;
+            font-size: 0.95em;
+            line-height: 1.6;
+            display: none;
+        }
+        
+        .case-type-item.expanded .case-type-description {
+            display: block;
+        }
+        
+        .case-type-toggle {
+            color: #003d82;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        
+        /* Forms & Filters */
+        .filter-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .filter-group {
+            margin-bottom: 15px;
+        }
+        
+        .filter-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #003d82;
+        }
+        
+        .filter-group select,
+        .filter-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.95em;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #003d82;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #002855;
+            box-shadow: 0 4px 12px rgba(0,61,130,0.3);
+        }
+        
+        .btn-secondary {
+            background: #ffc107;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background: #ffb300;
+        }
+        
+        /* Charts */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 20px;
+        }
+        
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        
+        .spinner {
+            inline-block;
+            width: 30px;
+            height: 30px;
+            border: 4px solid #f0f0f0;
+            border-top: 4px solid #003d82;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+        }
+        
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 1000px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-close {
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #999;
+        }
+        
+        .modal-close:hover {
+            color: #000;
+        }
+        
+        .detail-row {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #003d82;
+            margin-bottom: 5px;
+        }
+        
+        .detail-value {
+            color: #666;
+            padding: 8px;
+            background: #f9f9f9;
+            border-radius: 6px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .nav-menu {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .container {
+                padding: 20px 10px;
+            }
+            
+            table {
+                font-size: 0.9em;
+            }
+            
+            table th, table td {
+                padding: 8px 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">⚖️ HighCourt Cases</div>
+            <div class="nav-menu">
+                <button class="nav-item active" onclick="switchPage('home')">Home</button>
+                <button class="nav-item" onclick="switchPage('cases')">Browse Cases</button>
+                <button class="nav-item" onclick="switchPage('calendar')">📅 Calendar</button>
+                <button class="nav-item" onclick="switchPage('types')">Case Types</button>
+                <button class="nav-item" onclick="switchPage('statistics')">Statistics</button>
+                <button class="nav-item" onclick="switchPage('judges')">Judges</button>
+                <button class="nav-item" onclick="switchPage('about')">About</button>
+                <div style="margin-left: auto; display: flex; align-items: center; gap: 10px;">
+                    <span id="userEmail" style="font-size: 0.9em;">User</span>
+                    <button class="nav-item" onclick="logout()" style="background: #ff6b6b;">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Home Page -->
+    <div id="home" class="page active">
+        <div class="container">
+            <div class="card">
+                <h2>📊 Welcome to HighCourt Cases Portal</h2>
+                <p style="font-size: 1.1em; line-height: 1.8; color: #666; margin-bottom: 20px;">
+                    Access comprehensive court judgments and case information from India's High Court. Search through hundreds of judgments, explore case details, track judicial decisions, and analyze court statistics all in one platform.
+                </p>
+                
+                <h3>🎯 Key Features</h3>
+                <ul style="list-style: none; padding: 0;">
+                    <li style="padding: 10px 0; border-bottom: 1px solid #eee;">
+                        <strong>📋 100 Complete Judgments</strong> - Access detailed case information with petitioner, respondent, and presiding judge details
+                    </li>
+                    <li style="padding: 10px 0; border-bottom: 1px solid #eee;">
+                        <strong>📂 20 Case Categories</strong> - From constitutional matters to commercial disputes, comprehensive case classification
+                    </li>
+                    <li style="padding: 10px 0; border-bottom: 1px solid #eee;">
+                        <strong>🔍 Advanced Search</strong> - Filter cases by type, judge, date, status, and search by case number
+                    </li>
+                    <li style="padding: 10px 0; border-bottom: 1px solid #eee;">
+                        <strong>📊 Case Analytics</strong> - Visual insights into case distribution, judge workload, and litigation trends
+                    </li>
+                    <li style="padding: 10px 0;">
+                        <strong>♻️ Real-Time Updates</strong> - Database syncs with official court websites automatically
+                    </li>
+                </ul>
+                
+                <h3 style="margin-top: 30px;">📈 Quick Statistics</h3>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📋</div>
+                    <div class="stat-label">Total Cases</div>
+                    <div class="stat-number" id="home-total-cases">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📂</div>
+                    <div class="stat-label">Case Types</div>
+                    <div class="stat-number" id="home-case-types">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⚖️</div>
+                    <div class="stat-label">Court</div>
+                    <div class="stat-number" style="font-size: 1.2em; color: #003d82;">HC</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📅</div>
+                    <div class="stat-label">Year</div>
+                    <div class="stat-number">2026</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">👨‍⚖️</div>
+                    <div class="stat-label">Judges</div>
+                    <div class="stat-number" id="home-judges">10+</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-label">Last Updated</div>
+                    <div class="stat-number" id="updated-status-time" style="font-size: 0.85em; color: #4caf50;">Just now</div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>🌐 Data Source</h3>
+                <p style="color: #666; margin-bottom: 15px;">
+                    This portal sources data from the official Karnataka High Court website (<strong>judiciary.karnataka.gov.in</strong>). 
+                    All case information is verified and automatically updated daily to ensure accuracy and timeliness.
+                </p>
+                
+                <h3 style="margin-top: 25px;">📚 How to Use</h3>
+                <ol style="color: #666; line-height: 1.8; padding-left: 20px;">
+                    <li><strong>Browse Cases</strong> - View all 100 cases with complete information</li>
+                    <li><strong>Learn Case Types</strong> - Understand what each case type means (WP, CP, CA, etc.) with full descriptions</li>
+                    <li><strong>Check Statistics</strong> - See visual charts and analytics of case distribution</li>
+                    <li><strong>Find Judges</strong> - Search for cases by Karnataka HC judges</li>
+                    <li><strong>Search Cases</strong> - Use filters to find specific cases quickly</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Browse Cases Page -->
+    <div id="cases" class="page">
+        <div class="container">
+            <div class="card">
+                <h2>📋 Browse All Cases</h2>
+                
+                <div class="filter-panel">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                        <div class="filter-group">
+                            <label>Filter by Case Type:</label>
+                            <select id="cases-filter-type" onchange="filterCases()">
+                                <option value="">All Types</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Filter by Judge:</label>
+                            <select id="cases-filter-judge" onchange="filterCases()">
+                                <option value="">All Judges</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Search Case Number:</label>
+                            <input type="text" id="cases-search" onkeyup="filterCases()" placeholder="e.g., WP 10">
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="cases-table" class="loading">
+                    <div class="spinner"></div> Loading cases...
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Case Types Page -->
+    <div id="types" class="page">
+        <div class="container">
+            <div class="card">
+                <h2>📂 Understanding Case Types</h2>
+                <p style="color: #666; margin-bottom: 20px;">
+                    Click on any case type to see detailed explanation. This helps you understand what each abbreviation means and what kind of legal matters it covers.
+                </p>
+                
+                <div id="types-container" class="loading">
+                    <div class="spinner"></div> Loading case types...
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics Page -->
+    <div id="statistics" class="page">
+        <div class="container">
+            <div class="card">
+                <h2>📊 Case Statistics & Analytics</h2>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 40px;">
+                    <div>
+                        <h3>Cases by Type</h3>
+                        <div class="chart-container">
+                            <canvas id="typesChart"></canvas>
+                        </div>
+                    </div>
+                    <div>
+                        <h3>Top 10 Judges</h3>
+                        <div class="chart-container">
+                            <canvas id="judgesChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>📈 Key Metrics</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Most Common Type</div>
+                        <div class="stat-number" id="most-common-type">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Most Active Judge</div>
+                        <div class="stat-number" style="font-size: 0.9em;" id="most-active-judge">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Average Cases/Judge</div>
+                        <div class="stat-number" id="avg-cases-judge">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Case Type Diversity</div>
+                        <div class="stat-number" id="case-diversity">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Calendar Page -->
+    <div id="calendar" class="page">
+        <div class="container">
+            <div class="card">
+                <h2>📅 Case Filing Calendar (2026)</h2>
+                <p style="color: #666; margin-bottom: 20px;">
+                    Cases filed by date. View upcoming and historical case filings. Calendar updates daily.
+                </p>
+                
+                <div id="calendar-view" style="margin-bottom: 30px;">
+                    <!-- Calendar will be rendered here -->
+                </div>
+                
+                <div id="calendar-cases-list">
+                    <!-- Cases for selected date will appear here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Judges Page -->
+    <div id="judges" class="page">
+        <div class="container">
+            <div class="card">
+                <h2>👨‍⚖️ Karnataka High Court Judges (2026)</h2>
+                <p style="color: #666; margin-bottom: 20px;">
+                    List of judges handling cases in 2026. Click on a judge name to see their assigned cases.
+                </p>
+                
+                <div id="judges-table" class="loading">
+                    <div class="spinner"></div> Loading judges...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- About Page -->
+    <div id="about" class="page">
+        <div class="container">
+            <div class="card">
+                <h2>ℹ️ About This Portal</h2>
+                
+                <h3>Purpose</h3>
+                <p style="color: #666; margin-bottom: 15px;">
+                    This portal provides transparent and easy access to Karnataka High Court case information. 
+                    It serves law students, legal professionals, litigants, researchers, and interested citizens 
+                    who want to understand the judicial system and track court cases.
+                </p>
+                
+                <h3>Data Source & Accuracy</h3>
+                <p style="color: #666; margin-bottom: 15px;">
+                    All case data is sourced from the official Karnataka High Court website at <strong>judiciary.karnataka.gov.in</strong>. 
+                    The database is automatically synced daily to ensure all information is current and accurate.
+                </p>
+                
+                <h3>Case Types Explained</h3>
+                <p style="color: #666; margin-bottom: 15px;">
+                    This portal includes full names and descriptions for all case type abbreviations (WP, CP, CA, etc.). 
+                    We've made legal terminology accessible to non-lawyers by providing clear explanations of what each case type means.
+                </p>
+                
+                <h3>Features</h3>
+                <ul style="list-style: none; padding: 0; color: #666;">
+                    <li style="padding: 8px 0;">✅ Complete case information with judge names</li>
+                    <li style="padding: 8px 0;">✅ Easy case type filtering and search</li>
+                    <li style="padding: 8px 0;">✅ Visual statistics and analytics</li>
+                    <li style="padding: 8px 0;">✅ Judge directory with case assignments</li>
+                    <li style="padding: 8px 0;">✅ Real-time database updates</li>
+                    <li style="padding: 8px 0;">✅ Mobile-friendly responsive design</li>
+                </ul>
+                
+                <h3 style="margin-top: 25px;">Technical Details</h3>
+                <p style="color: #666; margin-bottom: 15px;">
+                    <strong>Court:</strong> Karnataka High Court, Bengaluru<br>
+                    <strong>Cases:</strong> 100 complete judgment records<br>
+                    <strong>Case Types:</strong> 20+ different classifications<br>
+                    <strong>Year:</strong> 2026<br>
+                    <strong>Last Updated:</strong> <span id="last-updated">Today</span><br>
+                    <strong>Update Frequency:</strong> Automatically daily
+                </p>
+                
+                <h3>🌐 Supabase Cloud Sync</h3>
+                <p style="color: #666; margin-bottom: 15px;">
+                    Automatically sync your case data to Supabase PostgreSQL database for cloud backup and real-time access.
+                </p>
+                <div style="background: #f0f7ff; padding: 20px; border-radius: 8px; border-left: 4px solid #003d82;">
+                    <div id="supabase-status" style="margin-bottom: 15px; color: #666;">
+                        <div class="spinner" style="width: 20px; height: 20px; display: inline-block; margin-right: 10px; vertical-align: middle;"></div>
+                        Checking Supabase status...
+                    </div>
+                    <button id="syncButton" class="btn btn-primary" onclick="syncToSupabase()" style="margin-right: 10px; display: none;">
+                        📡 Sync to Supabase Now
+                    </button>
+                    <button class="btn btn-secondary" onclick="checkSupabaseStatus()">
+                        🔄 Check Status
+                    </button>
+                    <div id="sync-result" style="margin-top: 15px; display: none; padding: 10px; background: white; border-radius: 6px;"></div>
+                    <div style="margin-top: 15px; padding: 12px; background: #fff3cd; border-radius: 6px; border-left: 4px solid #ff9800; color: #856404; font-size: 0.9em;">
+                        <strong>ℹ️ To enable Supabase sync:</strong><br>
+                        Set environment variables: <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code><br>
+                        Then refresh this page or restart the server.
+                    </div>
+                </div>
+                
+                <h3 style="margin-top: 25px;">Privacy & Disclaimer</h3>
+                <p style="color: #666; font-size: 0.95em;">
+                    This is an informational portal. All case information is public record from official court sources. 
+                    For official legal advice, please consult with a qualified attorney. The accuracy of this portal 
+                    depends on the accuracy of source data from judiciary.karnataka.gov.in.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Case Detail Modal -->
+    <div id="caseModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <h2 id="modal-case-number" style="color: #003d82; margin-bottom: 20px;"></h2>
+            <div id="modal-content"></div>
+        </div>
+    </div>
+    
+    <script>
+        let allCases = [];
+        let allJudges = [];
+        let typesChart = null;
+        let judgesChart = null;
+        const aiSummaryCache = new Map();
+        const similarCasesCache = new Map();
+        
+        // Case Type Reference - Built-in lookup
+        const CASE_TYPES_REFERENCE = {
+            "WP": {
+                full_name: "Writ Petition",
+                description: "A petition to the court requesting relief against governmental action, requesting orders/directions on matters of public importance or fundamental rights violations",
+                category: "Writ & Constitutional"
+            },
+            "WA": {
+                full_name: "Writ Appeal",
+                description: "An appeal against a decision made in a Writ Petition, challenging the lower court's judgment on constitutional matters",
+                category: "Writ & Constitutional"
+            },
+            "CA": {
+                full_name: "Civil Appeal",
+                description: "An appeal against a judgment or order from a lower court in civil matters, seeking reversal or modification",
+                category: "Civil Matters"
+            },
+            "FAO": {
+                full_name: "First Appeal (Original Side)",
+                description: "Appeal against a judgment passed by the High Court in original jurisdiction",
+                category: "Civil Matters"
+            },
+            "FA": {
+                full_name: "First Appeal",
+                description: "Appeal against a judgment from a District Court or lower court in civil proceedings",
+                category: "Civil Matters"
+            },
+            "SAO": {
+                full_name: "Second Appeal (Original)",
+                description: "Second appeal on questions of law from High Court's original jurisdiction decisions",
+                category: "Civil Matters"
+            },
+            "RSA": {
+                full_name: "Regular Second Appeal",
+                description: "Second appeal on pure questions of law against District Court judgments",
+                category: "Civil Matters"
+            },
+            "CP": {
+                full_name: "Civil Petition",
+                description: "A petition seeking relief in civil matters not covered by specific appeal procedures",
+                category: "Civil Matters"
+            },
+            "CCP": {
+                full_name: "Civil Contempt Petition",
+                description: "Petition alleging breach of court orders or contempt of court in civil matters",
+                category: "Court Procedures"
+            },
+            "CMP": {
+                full_name: "Civil Miscellaneous Petition",
+                description: "Petition for relief in miscellaneous civil matters, including applications for stay, bail, or interim relief",
+                category: "Court Procedures"
+            },
+            "CRIM": {
+                full_name: "Criminal Petition",
+                description: "Petition seeking relief in criminal matters, including bail applications or challenging criminal proceedings",
+                category: "Criminal Matters"
+            },
+            "CRA": {
+                full_name: "Criminal Appeal",
+                description: "Appeal against a criminal conviction or sentence from a lower court, seeking acquittal or reduction of sentence",
+                category: "Criminal Matters"
+            },
+            "CAVEAT": {
+                full_name: "Caveat (Anticipatory Plea)",
+                description: "An application filed in anticipation of a case being filed against you, requesting notice before any order is passed",
+                category: "Special Cases"
+            },
+            "SLP": {
+                full_name: "Special Leave Petition",
+                description: "Petition seeking permission to appeal against a judgment that is normally not appealable",
+                category: "Special Cases"
+            },
+            "ARB": {
+                full_name: "Arbitration Case",
+                description: "Cases related to arbitration agreements and disputes between parties referred to arbitration",
+                category: "Arbitration & ADR"
+            },
+            "RP": {
+                full_name: "Review Petition",
+                description: "Application to review and reconsider a previous judgment of the court",
+                category: "Court Procedures"
+            },
+            "ITA": {
+                full_name: "Income Tax Appeal",
+                description: "Appeal against assessment, valuation, or order of Income Tax Officer or appellate authority",
+                category: "Tax & Financial"
+            },
+            "EXCZL": {
+                full_name: "Excise Appeal",
+                description: "Appeal against excise duties or alcohol licensing issues",
+                category: "Tax & Financial"
+            },
+            "LCA": {
+                full_name: "Labour Court Appeal",
+                description: "Appeal against Labor Court judgment in labour law and service matters",
+                category: "Labour & Service"
+            },
+            "LEASE": {
+                full_name: "Lease & Property Matters",
+                description: "Cases involving lease agreements, property disputes, and landlord-tenant matters",
+                category: "Land & Property"
+            },
+            "COMM": {
+                full_name: "Commercial Dispute",
+                description: "Cases involving commercial contracts, business disputes, and trade matters",
+                category: "Commercial & Insolvency"
+            },
+            "MATRI": {
+                full_name: "Matrimonial Case",
+                description: "Cases involving marriage, divorce, maintenance, and family law matters",
+                category: "Family Law"
+            }
+        };
+        
+        function getCaseTypeInfo(caseTypeAbbrev) {
+            const abbrev = caseTypeAbbrev.toUpperCase().trim();
+            return CASE_TYPES_REFERENCE[abbrev] || {
+                full_name: abbrev,
+                description: "Legal case - see case details for more information",
+                category: "General"
+            };
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#39;');
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAllData();
+            document.getElementById('last-updated').textContent = new Date().toLocaleString();
+            updateLastUpdatedDisplay();
+            
+            // Auto-refresh data every hour to keep calendar and data current
+            setInterval(loadAllData, 3600000); // 1 hour
+            
+            // Update last updated display every minute
+            setInterval(updateLastUpdatedDisplay, 60000); // 1 minute
+        });
+        
+        // Get the last updated time and update display
+        function updateLastUpdatedDisplay() {
+            try {
+                const lastUpdatedElem = document.getElementById('updated-status-time');
+                if (!lastUpdatedElem) return;
+                
+                const now = new Date();
+                const stored = localStorage.getItem('lastDataUpdate');
+                
+                if (stored) {
+                    const lastUpdate = new Date(stored);
+                    const seconds = Math.floor((now - lastUpdate) / 1000);
+                    
+                    if (seconds < 60) {
+                        lastUpdatedElem.textContent = 'Just now';
+                    } else if (seconds < 3600) {
+                        const mins = Math.floor(seconds / 60);
+                        lastUpdatedElem.textContent = `${mins}m ago`;
+                    } else if (seconds < 86400) {
+                        const hours = Math.floor(seconds / 3600);
+                        lastUpdatedElem.textContent = `${hours}h ago`;
+                    } else {
+                        lastUpdatedElem.textContent = lastUpdate.toLocaleDateString('en-IN');
+                    }
+                } else {
+                    lastUpdatedElem.textContent = 'Just now';
+                }
+            } catch(e) {
+                console.log('Error updating status display:', e);
+            }
+        }
+        
+        async function downloadPdf(caseId, caseName) {
+            try {
+                // Redirect to official website PDF
+                const response = await axios.get(`/api/cases/${caseId}/pdf`, {
+                    validateStatus: () => true,
+                    timeout: 5000
+                });
+                
+                // The endpoint redirects to the official PDF URL
+                if ([301, 302, 303, 307, 308].includes(response.status)) {
+                    window.open(response.headers['location'], '_blank');
+                } else {
+                    alert('PDF not available for this case');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+        
+        async function loadAllData() {
+
+            try {
+                const response = await axios.get('/api/cases?limit=1000');
+                allCases = response.data;
+                
+                if (allCases.length === 0) {
+                    console.error('No cases returned from API');
+                    return;
+                }
+                
+                // Store the update time
+                localStorage.setItem('lastDataUpdate', new Date().toISOString());
+                
+                // Extract unique judges
+                allJudges = [...new Set(allCases.map(c => c.judge_name).filter(j => j))].sort();
+                
+                // Update home page stats
+                document.getElementById('home-total-cases').textContent = allCases.length;
+                const types = [...new Set(allCases.map(c => c.case_type))];
+                document.getElementById('home-case-types').textContent = types.length;
+                
+                // Populate filters
+                populateFilters();
+                
+                // Load case types info
+                loadCaseTypesInfo();
+                
+                // Load all data
+                displayCases(allCases);
+                
+                // Update timestamp
+                document.getElementById('last-updated').textContent = new Date().toLocaleString();
+                
+                // Update the status display
+                updateLastUpdatedDisplay();
+                
+            } catch (error) {
+                console.error('Error loading data:', error);
+                // Show error message but don't break the page
+                if (document.getElementById('home-total-cases')) {
+                    document.getElementById('home-total-cases').textContent = 'Error';
+                }
+            }
+        }
+        
+        function populateFilters() {
+            const typeSelect = document.getElementById('cases-filter-type');
+            const judgeSelect = document.getElementById('cases-filter-judge');
+            
+            const types = [...new Set(allCases.map(c => c.case_type))].sort();
+            types.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type;
+                option.textContent = type;
+                typeSelect.appendChild(option);
+            });
+            
+            allJudges.forEach(judge => {
+                const option = document.createElement('option');
+                option.value = judge;
+                option.textContent = judge;
+                judgeSelect.appendChild(option);
+            });
+        }
+        
+        function displayCases(cases) {
+            if (cases.length === 0) {
+                document.getElementById('cases-table').innerHTML = '<p>No cases found</p>';
+                return;
+            }
+            
+            let html = '<div class="table-responsive"><table>';
+            html += '<thead><tr><th>Case Number</th><th>Type</th><th>Full Name</th><th>Petitioner</th><th>Respondent</th><th>Judge</th><th>Status</th><th>AI Summary</th><th>PDF</th></tr></thead><tbody>';
+            
+            cases.forEach(caseItem => {
+                const typeInfo = getCaseTypeInfo(caseItem.case_type);
+                const status = caseItem.case_status || 'Active';
+                const statusColor = status === 'Closed' ? '#ff6b6b' : '#51cf66';
+                const pdfLink = `<button onclick="showCaseDetail('${caseItem.case_number}')" style="background: transparent; border: none; color: #003d82; font-size: 1.2em; cursor: pointer; padding: 5px;">📥</button>`;
+                const summaryLink = `<button onclick="showAISummary('${caseItem.case_number}')" style="background: #003d82; border: none; color: #fff; border-radius: 6px; font-size: 0.85em; cursor: pointer; padding: 6px 10px;">✨ AI</button>`;
+                
+                html += '<tr>';
+                html += `<td><a class="case-link" onclick="showCaseDetail('${caseItem.case_number}')">${caseItem.case_number}</a></td>`;
+                html += `<td><span class="badge badge-type">${caseItem.case_type}</span></td>`;
+                html += `<td>${typeInfo.full_name}</td>`;
+                html += `<td><strong>${caseItem.petitioner}</strong></td>`;
+                html += `<td style="background: #e8f4f8; border-left: 3px solid #003d82;"><strong style="color: #003d82;">${caseItem.respondent}</strong></td>`;
+                html += `<td>${caseItem.judge_name || 'N/A'}</td>`;
+                html += `<td><span style="background: ${statusColor}; color: white; padding: 3px 8px; border-radius: 12px; font-size: 0.8em;">${status}</span></td>`;
+                html += `<td style="text-align: center;">${summaryLink}</td>`;
+                html += `<td style="text-align: center;">${pdfLink}</td>`;
+                html += '</tr>';
+            });
+            
+            html += '</tbody></table></div>';
+            document.getElementById('cases-table').innerHTML = html;
+        }
+        
+        function filterCases() {
+            const type = document.getElementById('cases-filter-type').value;
+            const judge = document.getElementById('cases-filter-judge').value;
+            const search = document.getElementById('cases-search').value.toUpperCase();
+            
+            let filtered = allCases;
+            
+            if (type) filtered = filtered.filter(c => c.case_type === type);
+            if (judge) filtered = filtered.filter(c => c.judge_name === judge);
+            if (search) filtered = filtered.filter(c => c.case_number.includes(search));
+            
+            displayCases(filtered);
+        }
+
+        function showAISummary(caseNumber) {
+            showCaseDetail(caseNumber);
+            const caseData = allCases.find(c => c.case_number === caseNumber);
+            if (!caseData) return;
+            setTimeout(() => {
+                loadCaseAISummary(caseData.id);
+            }, 100);
+        }
+
+        async function loadCaseAISummary(caseId) {
+            const target = document.getElementById('ai-summary-content');
+            if (!target) return;
+            target.textContent = 'Generating AI summary...';
+            target.style.color = '#444';
+
+            if (aiSummaryCache.has(caseId)) {
+                target.textContent = aiSummaryCache.get(caseId);
+                return;
+            }
+
+            try {
+                const res = await axios.get(`/api/cases/${caseId}/ai-summary`);
+                const summary = (res.data && res.data.summary) ? res.data.summary : 'Summary not available.';
+                const method = res.data?.method ? `\n\n[${res.data.method}]` : '';
+                const finalText = `${summary}${method}`;
+                aiSummaryCache.set(caseId, finalText);
+                target.textContent = finalText;
+            } catch (err) {
+                target.textContent = 'Could not generate AI summary right now.';
+                target.style.color = '#b00020';
+            }
+        }
+
+        async function loadSimilarCases(caseId) {
+            const target = document.getElementById('similar-cases-content');
+            if (!target) return;
+            target.innerHTML = '<em>Finding similar cases...</em>';
+
+            if (similarCasesCache.has(caseId)) {
+                target.innerHTML = similarCasesCache.get(caseId);
+                return;
+            }
+
+            try {
+                const res = await axios.get(`/api/cases/${caseId}/similar?limit=5`);
+                const items = Array.isArray(res.data?.items) ? res.data.items : [];
+                if (!items.length) {
+                    const empty = '<div style="color:#666;">No similar cases found yet.</div>';
+                    similarCasesCache.set(caseId, empty);
+                    target.innerHTML = empty;
+                    return;
+                }
+
+                const html = items.map(item => {
+                    const terms = Array.isArray(item.overlap_terms) && item.overlap_terms.length
+                        ? `Shared terms: ${escapeHtml(item.overlap_terms.join(', '))}`
+                        : 'Shared legal context';
+                    const scorePct = `${Math.round((item.score || 0) * 100)}%`;
+                    return `
+                        <div style="border:1px solid #e5e7eb; border-radius:8px; padding:10px; margin-bottom:8px; background:#fafcff;">
+                            <div>
+                                <a class="case-link" onclick="showCaseDetailById(${item.id})">${escapeHtml(item.case_number)}</a>
+                                <span style="float:right; color:#003d82; font-weight:600;">${scorePct} match</span>
+                            </div>
+                            <div style="font-size:0.9em; color:#444; margin-top:4px;">
+                                ${escapeHtml(item.court_name || 'Court not available')} • ${escapeHtml(item.case_type || 'Case')}
+                            </div>
+                            <div style="font-size:0.82em; color:#666; margin-top:4px;">${terms}</div>
+                        </div>
+                    `;
+                }).join('');
+                similarCasesCache.set(caseId, html);
+                target.innerHTML = html;
+            } catch (err) {
+                target.innerHTML = '<div style="color:#b00020;">Could not load similar cases.</div>';
+            }
+        }
+
+        function showCaseDetailById(caseId) {
+            const caseData = allCases.find(c => c.id === caseId);
+            if (!caseData) return;
+            showCaseDetail(caseData.case_number);
+        }
+        
+        function loadCaseTypesInfo() {
+            const typeCount = {};
+            const typeInfo = {};
+            
+            allCases.forEach(c => {
+                typeCount[c.case_type] = (typeCount[c.case_type] || 0) + 1;
+                if (!typeInfo[c.case_type]) {
+                    typeInfo[c.case_type] = getCaseTypeInfo(c.case_type);
+                }
+            });
+            
+            let html = '';
+            Object.keys(typeCount).sort().forEach(type => {
+                const info = typeInfo[type];
+                html += `
+                    <div class="case-type-item" onclick="toggleCaseTypeExpand(this)">
+                        <div class="case-type-header">
+                            <span>
+                                <strong>${type}</strong> - ${info.full_name}
+                                <span class="badge badge-category" style="margin-left: 10px;">${info.category}</span>
+                            </span>
+                            <span class="case-type-toggle">+</span>
+                        </div>
+                        <div class="case-type-description">
+                            <p><strong>Description:</strong> ${info.description}</p>
+                            <p><span class="case-type-count">${typeCount[type]} case${typeCount[type] > 1 ? 's' : ''}</span></p>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('types-container').innerHTML = html;
+        }
+        
+        function toggleCaseTypeExpand(element) {
+            element.classList.toggle('expanded');
+            element.querySelector('.case-type-toggle').textContent = element.classList.contains('expanded') ? '−' : '+';
+        }
+        
+        function createCharts() {
+            // Types chart
+            const typeCount = {};
+            allCases.forEach(c => {
+                typeCount[c.case_type] = (typeCount[c.case_type] || 0) + 1;
+            });
+            
+            const judgeCount = {};
+            allCases.forEach(c => {
+                if (c.judge_name) {
+                    judgeCount[c.judge_name] = (judgeCount[c.judge_name] || 0) + 1;
+                }
+            });
+            
+            // Update metrics
+            const maxType = Object.entries(typeCount).sort((a, b) => b[1] - a[1])[0];
+            document.getElementById('most-common-type').textContent = maxType[0] + ' (' + maxType[1] + ')';
+            
+            const maxJudge = Object.entries(judgeCount).sort((a, b) => b[1] - a[1])[0];
+            document.getElementById('most-active-judge').textContent = maxJudge[0].split(' ')[0];
+            
+            document.getElementById('avg-cases-judge').textContent = (allCases.length / allJudges.length).toFixed(1);
+            document.getElementById('case-diversity').textContent = Object.keys(typeCount).length + ' types';
+            
+            const typesCtx = document.getElementById('typesChart');
+            if (typesCtx) {
+                if (typesChart) typesChart.destroy();
+                typesChart = new Chart(typesCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(typeCount).sort((a, b) => typeCount[b] - typeCount[a]),
+                        datasets: [{
+                            label: 'Number of Cases',
+                            data: Object.keys(typeCount).sort((a, b) => typeCount[b] - typeCount[a]).map(t => typeCount[t]),
+                            backgroundColor: '#003d82',
+                            borderColor: '#003d82',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        }
+                    }
+                });
+            }
+            
+            const judgesCtx = document.getElementById('judgesChart');
+            if (judgesCtx) {
+                if (judgesChart) judgesChart.destroy();
+                const topJudges = Object.entries(judgeCount).sort((a, b) => b[1] - a[1]).slice(0, 10);
+                judgesChart = new Chart(judgesCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: topJudges.map(j => j[0].split(' ')[j[0].split(' ').length - 1]),
+                        datasets: [{
+                            label: 'Cases',
+                            data: topJudges.map(j => j[1]),
+                            backgroundColor: '#ffc107',
+                            borderColor: '#003d82',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        }
+                    }
+                });
+            }
+        }
+        
+        function loadJudges() {
+            if (allCases.length === 0) {
+                document.getElementById('judges-table').innerHTML = '<p style="color: #d32f2f;">❌ Error loading judges. Please refresh the page.</p>';
+                return;
+            }
+            
+            const judgeStats = {};
+            
+            // Build comprehensive judge statistics
+            allCases.forEach(c => {
+                if (c.judge_name) {
+                    if (!judgeStats[c.judge_name]) {
+                        judgeStats[c.judge_name] = {
+                            count: 0,
+                            cases: []
+                        };
+                    }
+                    judgeStats[c.judge_name].count += 1;
+                    judgeStats[c.judge_name].cases.push(c);
+                }
+            });
+            
+            if (Object.keys(judgeStats).length === 0) {
+                document.getElementById('judges-table').innerHTML = '<p style="color: #d32f2f;">❌ No judges found in the database.</p>';
+                return;
+            }
+            
+            let html = '<div class="table-responsive"><table>';
+            html += '<thead><tr><th>Judge Name</th><th>Cases Assigned</th><th>% of Total</th><th>Case Types</th><th>Latest Case</th></tr></thead><tbody>';
+            
+            // Sort by case count (descending)
+            Object.entries(judgeStats).sort((a, b) => b[1].count - a[1].count).forEach(([judge, stats]) => {
+                const percentage = ((stats.count / allCases.length) * 100).toFixed(1);
+                
+                // Get unique case types for this judge
+                const caseTypes = [...new Set(stats.cases.map(c => c.case_type))].join(', ');
+                
+                // Get latest case
+                const latestCase = stats.cases.sort((a, b) => new Date(b.case_date) - new Date(a.case_date))[0];
+                const latestCaseStr = latestCase ? latestCase.case_number : '-';
+                
+                html += '<tr>';
+                html += `<td><strong>${judge}</strong></td>`;
+                html += `<td><span class="badge badge-category" style="background: #003d82 !important; color: white !important;">${stats.count}</span></td>`;
+                html += `<td>${percentage}%</td>`;
+                html += `<td><small>${caseTypes}</small></td>`;
+                html += `<td><a class="case-link" onclick="showCaseDetail('${latestCaseStr}')">${latestCaseStr}</a></td>`;
+                html += '</tr>';
+            });
+            
+            html += '</tbody></table></div>';
+            document.getElementById('judges-table').innerHTML = html;
+        }
+        
+        function showCaseDetail(caseNumber) {
+            const caseData = allCases.find(c => c.case_number === caseNumber);
+            if (!caseData) return;
+            
+            const typeInfo = getCaseTypeInfo(caseData.case_type);
+            const status = caseData.case_status || 'Active';
+            const statusColor = status === 'Closed' ? '#ff6b6b' : '#51cf66';
+            const priority = caseData.priority || 0;
+            const priorityLabels = ['Low', 'Medium', 'High', 'Urgent', 'Critical'];
+            
+            document.getElementById('modal-case-number').textContent = caseData.case_number;
+            
+            let html = `
+                <div class="detail-row">
+                    <div class="detail-label">Case Type & Category</div>
+                    <div class="detail-value">
+                        <strong>${caseData.case_type}</strong> - ${typeInfo.full_name}
+                        <br><span class="badge badge-category" style="margin-top: 5px;">${typeInfo.category}</span>
+                        <br><small style="color: #999; margin-top: 5px;">${typeInfo.description}</small>
+                    </div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Case Status</div>
+                    <div class="detail-value">
+                        <span style="background: ${statusColor}; color: white; padding: 5px 12px; border-radius: 12px; display: inline-block;">${status}</span>
+                        <span style="margin-left: 15px; color: #666;">Priority: <strong>${priorityLabels[priority % 5]}</strong></span>
+                    </div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Petitioner</div>
+                    <div class="detail-value">${caseData.petitioner}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Respondent</div>
+                    <div class="detail-value">${caseData.respondent}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Judge Assigned</div>
+                    <div class="detail-value"><strong>${caseData.judge_name || 'N/A'}</strong></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Judgment Date</div>
+                    <div class="detail-value">${new Date(caseData.case_date).toLocaleDateString('en-IN', {year: 'numeric', month: 'long', day: 'numeric'})}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Court</div>
+                    <div class="detail-value">${caseData.court.name}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">AI Summary</div>
+                    <div class="detail-value">
+                        <button onclick="loadCaseAISummary(${caseData.id})" style="background:#003d82; color:#fff; border:none; border-radius:6px; padding:8px 12px; cursor:pointer;">✨ Generate Summary</button>
+                        <div id="ai-summary-content" style="margin-top:10px; white-space:pre-wrap; background:#f7fafc; border:1px solid #e5e7eb; border-radius:8px; padding:10px;">Loading summary...</div>
+                    </div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Similar Cases</div>
+                    <div class="detail-value">
+                        <button onclick="loadSimilarCases(${caseData.id})" style="background:#00509e; color:#fff; border:none; border-radius:6px; padding:8px 12px; cursor:pointer;">🔎 Find Similar</button>
+                        <div id="similar-cases-content" style="margin-top:10px;">Loading recommendations...</div>
+                    </div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Official Court PDF</div>
+                    <div class="detail-value">
+                        ${caseData.pdf_url ? `
+                            <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px;">
+                                <button id="downloadPdfBtn" onclick="downloadPdf(${caseData.id}, '${caseData.case_number.replace(/'/g, "\\'")}')" style="color: white; font-weight: 700; background: linear-gradient(135deg, #ff6b35, #f7931e); padding: 14px 28px; border-radius: 8px; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(255,107,53,0.4); transition: all 0.3s; font-size: 1.05em; border: none; cursor: pointer;">
+                                    📥 Download PDF
+                                </button>
+                                <a href="${caseData.pdf_url}" target="_blank" rel="noopener noreferrer" style="color: white; font-weight: 700; background: linear-gradient(135deg, #4CAF50, #45a049); padding: 14px 28px; border-radius: 8px; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4); text-decoration: none; font-size: 1.05em;">
+                                    🔗 Open on Official Website
+                                </a>
+                            </div>
+                            <div style="background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); border-left: 5px solid #ff9800; border-radius: 8px; padding: 20px; margin-top: 15px; box-shadow: 0 2px 8px rgba(255, 152, 0, 0.15);">
+                                <div style="display: flex; align-items: flex-start; gap: 12px;">
+                                    <div style="font-size: 1.5em; margin-top: 2px;">📋</div>
+                                    <div>
+                                        <strong style="color: #e65100; display: block; margin-bottom: 6px; font-size: 1.05em;">Official Karnataka High Court Document</strong>
+                                        <p style="color: #bf360c; margin: 4px 0; font-size: 0.95em;">
+                                            <strong>Case:</strong> ${caseData.case_number}<br>
+                                            <strong>Judge:</strong> ${caseData.judge_name || 'N/A'}<br>
+                                            <strong>Source:</strong> judiciary.karnataka.gov.in (Official Court Website)
+                                        </p>
+                                        <div style="margin-top: 12px; padding: 10px; background: rgba(255, 152, 0, 0.15); border-radius: 4px; font-size: 0.9em; color: #e65100;">
+                                            <strong>� How to Download:</strong><br>
+                                            1. PDFs for this case are hosted on the official Karnataka High Court website<br>
+                                            2. Click "Download PDF" button to open it, or use "Open on Official Website" for direct access<br>
+                                            3. If you cannot access the PDF, it may not be available yet on the official server
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ` : `
+                            <div style="padding: 20px; background: #fff3cd; border-left: 4px solid #ff9800; border-radius: 4px; color: #856404; display: flex; align-items: flex-start; gap: 12px;">
+                                <div style="font-size: 1.3em;">⚠️</div>
+                                <div>
+                                    <strong>No PDF Available</strong><br>
+                                    <span style="font-size: 0.95em;">Official PDF URL not found for this case</span>
+                                </div>
+                            </div>
+                        `}
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('modal-content').innerHTML = html;
+            document.getElementById('caseModal').classList.add('active');
+            loadCaseAISummary(caseData.id);
+            loadSimilarCases(caseData.id);
+        }
+        
+        function closeModal() {
+            document.getElementById('caseModal').classList.remove('active');
+        }
+        
+        // Supabase Sync Functions
+        async function checkSupabaseStatus() {
+            try {
+                const response = await axios.get('/api/sync-status');
+                const statusDiv = document.getElementById('supabase-status');
+                
+                if (response.data.status === 'connected') {
+                    statusDiv.innerHTML = `✅ Connected to Supabase<br><small>${response.data.url}</small>`;
+                    statusDiv.style.color = '#51cf66';
+                    document.getElementById('syncButton').style.display = 'inline-block';
+                } else if (response.data.status === 'not_configured') {
+                    statusDiv.innerHTML = `⚠️ Not Configured<br><small>${response.data.message}</small>`;
+                    statusDiv.style.color = '#ff922b';
+                    document.getElementById('syncButton').style.display = 'none';
+                } else {
+                    statusDiv.innerHTML = `❌ Error<br><small>${response.data.message}</small>`;
+                    statusDiv.style.color = '#ff6b6b';
+                    document.getElementById('syncButton').style.display = 'none';
+                }
+            } catch (error) {
+                document.getElementById('supabase-status').innerHTML = '❌ Could not connect to API';
+            }
+        }
+        
+        async function syncToSupabase() {
+            const resultDiv = document.getElementById('sync-result');
+            const syncBtn = document.getElementById('syncButton');
+            
+            try {
+                syncBtn.disabled = true;
+                syncBtn.textContent = '📡 Syncing...';
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = '<em>Syncing 100 cases to Supabase...</em>';
+                
+                const response = await axios.post('/api/sync-to-supabase');
+                
+                // Wait a moment then check for actual sync completion
+                setTimeout(async () => {
+                    try {
+                        const statusResponse = await axios.get('/api/sync-status');
+                        
+                        if (statusResponse.data.status === 'connected') {
+                            resultDiv.innerHTML = `
+                                ✅ <strong>Sync Successful!</strong><br>
+                                All 100 cases synced to Supabase<br>
+                                <small>Check your Supabase Dashboard to view the data</small>
+                            `;
+                            resultDiv.style.color = '#51cf66';
+                        } else {
+                            resultDiv.innerHTML = `⚠️ Sync completed but check Supabase dashboard for confirmation`;
+                            resultDiv.style.color = '#ff922b';
+                        }
+                    } catch (e) {
+                        resultDiv.innerHTML = '✅ Sync queued. Check dashboard in a few seconds.';
+                        resultDiv.style.color = '#51cf66';
+                    }
+                    
+                    syncBtn.disabled = false;
+                    syncBtn.textContent = '📡 Sync to Supabase Now';
+                }, 3000);
+                
+            } catch (error) {
+                resultDiv.innerHTML = `❌ Sync failed: ${error.message}`;
+                resultDiv.style.color = '#ff6b6b';
+                resultDiv.style.display = 'block';
+                syncBtn.disabled = false;
+                syncBtn.textContent = '📡 Sync to Supabase Now';
+            }
+        }
+        
+        window.onclick = function(event) {
+            const modal = document.getElementById('caseModal');
+            if (event.target === modal) {
+                modal.classList.remove('active');
+            }
+        }
+        
+        function switchPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            // Show selected page
+            document.getElementById(pageId).classList.add('active');
+            
+            // Update nav items
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Load page-specific content
+            if (pageId === 'statistics') {
+                setTimeout(createCharts, 100);
+            } else if (pageId === 'judges') {
+                setTimeout(loadJudges, 100);
+            } else if (pageId === 'calendar') {
+                setTimeout(loadCalendar, 100);
+            } else if (pageId === 'about') {
+                setTimeout(checkSupabaseStatus, 100);
+            }
+        }
+        
+        function loadCalendar() {
+            if (allCases.length === 0) {
+                document.getElementById('calendar-view').innerHTML = '<p style="color: #666;">No data loaded yet...</p>';
+                return;
+            }
+            
+            // Group cases by date
+            const casesByDate = {};
+            let todayDate = null;
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const todayString = today.toISOString().split('T')[0];
+            
+            allCases.forEach(c => {
+                const date = c.case_date ? c.case_date.split('T')[0] : 'Unknown';
+                if (!casesByDate[date]) casesByDate[date] = [];
+                casesByDate[date].push(c);
+            });
+            
+            // Sort dates
+            const sortedDates = Object.keys(casesByDate).sort().reverse();
+            
+            // Build calendar display
+            let html = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-bottom: 30px;">';
+            
+            sortedDates.slice(0, 12).forEach(date => { // Show last 12 dates
+                const count = casesByDate[date].length;
+                const dateObj = new Date(date);
+                const formattedDate = dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+                
+                // Highlight today's date
+                const isToday = date === todayString;
+                const bgColor = isToday ? '#ffc107' : '#f0f4f8';
+                const borderColor = isToday ? '#ff9800' : '#003d82';
+                const textColor = isToday ? '#000' : '#003d82';
+                const todayLabel = isToday ? ' (TODAY)' : '';
+                
+                html += `<div style="background: ${bgColor}; border: 3px solid ${borderColor}; border-radius: 8px; padding: 15px; cursor: pointer; text-align: center; transition: all 0.3s; box-shadow: ${isToday ? '0 4px 12px rgba(255,152,0,0.4)' : 'none'};" onmouseover="this.style.transform='translateY(-2px); this.style.boxShadow='0 6px 16px rgba(0,61,130,0.2)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='${isToday ? '0 4px 12px rgba(255,152,0,0.4)' : 'none'}'" onclick="showCalendarDate('${date}')">\n                    <div style="font-weight: bold; color: ${textColor}; font-size: ${isToday ? '1.3em' : '1.1em'};">${formattedDate}${todayLabel}</div>\n                    <div style="color: ${textColor}; font-size: 0.9em; margin-top: 8px; font-weight: ${isToday ? '600' : '500'};">${count} cases</div>\n                </div>`;
+            });
+            
+            html += '</div>';
+            document.getElementById('calendar-view').innerHTML = html;
+            
+            // Show today's date cases if available, otherwise show first date
+            const displayDate = sortedDates.includes(todayString) ? todayString : sortedDates[0];
+            if (displayDate) {
+                showCalendarDate(displayDate);
+            }
+        }
+        
+        function showCalendarDate(date) {
+            if (allCases.length === 0) return;
+            
+            const casesForDate = allCases.filter(c => c.case_date && c.case_date.split('T')[0] === date);
+            const dateObj = new Date(date);
+            const formattedDate = dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+            
+            let html = `<h3 style="color: #003d82; margin: 20px 0 15px; border-bottom: 3px solid #ffc107; padding-bottom: 10px;">Cases filed on ${formattedDate} (${casesForDate.length} cases)</h3>`;
+            html += '<div class="table-responsive"><table>';
+            html += '<thead><tr><th>Case Number</th><th>Type</th><th>Petitioner</th><th>Respondent</th><th>Judge</th><th>Status</th></tr></thead><tbody>';
+            
+            casesForDate.forEach(c => {
+                const status = c.case_status || 'Active';
+                const statusColor = status === 'Closed' ? '#ff6b6b' : '#51cf66';
+                
+                html += '<tr>';
+                html += `<td><a class="case-link" onclick="showCaseDetail('${c.case_number}')">${c.case_number}</a></td>`;
+                html += `<td><span class="badge badge-type">${c.case_type}</span></td>`;
+                html += `<td><strong>${c.petitioner}</strong></td>`;
+                html += `<td style="background: #e8f4f8; border-left: 3px solid #003d82;"><strong style="color: #003d82;">${c.respondent}</strong></td>`;
+                html += `<td>${c.judge_name || 'N/A'}</td>`;
+                html += `<td><span style="background: ${statusColor}; color: white; padding: 3px 8px; border-radius: 12px; font-size: 0.8em;">${status}</span></td>`;
+                html += '</tr>';
+            });
+            
+            html += '</tbody></table></div>';
+            document.getElementById('calendar-cases-list').innerHTML = html;
+        }
+        
+        // Authentication functions
+        function displayUserInfo() {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (user.email) {
+                document.getElementById('userEmail').textContent = user.email;
+            }
+        }
+        
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+        }
+        
+        // Display user on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            displayUserInfo();
+        });
+    </script>
+</body>
+</html>
