@@ -1,14 +1,10 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": ".",
-  "env": {
-    "REACT_APP_API_URL": "@api_url",
-    "REACT_APP_GOOGLE_CLIENT_ID": "@google_client_id"
-  },
+  "buildCommand": "echo 'Static frontend only'",
+  "outputDirectory": "./dashboard",
   "rewrites": [
     {
       "source": "/(.*)",
-      "destination": "/dashboard/index.html"
+      "destination": "/index.html"
     }
   ]
 }
