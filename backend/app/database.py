@@ -6,9 +6,10 @@ import os
 load_dotenv()
 
 # Default to data directory for SQLite
-# Explicitly set to absolute path
-_db_file = "/Volumes/PortableSSD/court-ecosystem/data/court_ecosystem.db"
-os.makedirs(os.path.dirname(_db_file), exist_ok=True)
+# Use relative path that works on any system
+_db_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data")
+os.makedirs(_db_dir, exist_ok=True)
+_db_file = os.path.join(_db_dir, "court_ecosystem.db")
 # Use sqlite:// with absolute path
 # For absolute paths on Unix, the format is: sqlite:////absolute/path
 # The four slashes are: sqlite:// (scheme) + // (authority) + /absolute/path
