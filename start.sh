@@ -1,13 +1,13 @@
 #!/bin/bash
-# Set the working directory - Railway uses /app, local uses current directory
-if [ -d "/app" ]; then
-  cd /app
-else
-  cd "$(dirname "$0")"
-fi
+set -e
 
-# Set PYTHONPATH to include current directory
-export PYTHONPATH=.:$PYTHONPATH
+# Debug
+echo "Current directory: $(pwd)"
+echo "Python path: $(which python3)"
+echo "Backend directory exists: [ -d ./backend ] && echo yes || echo no"
+
+# Export PYTHONPATH
+export PYTHONPATH=/app:$PYTHONPATH
 
 # Start the application
-python3 -m uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
+exec python3 -m uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
