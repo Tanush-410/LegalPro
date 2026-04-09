@@ -6,11 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import logging
 import os
-from app.routes import dashboard, cases, scraper, websocket, karnataka_hc, supabase_sync, auth
-from app.scheduler.jobs import start_scheduler, initialize_db, seed_courts
-from app.scheduler import karnataka_hc_jobs
-from app.database import SessionLocal, engine, Base
-from app.models import User
+from app.routes import auth
+from app.database import engine, Base
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -48,90 +45,58 @@ async def disable_dashboard_cache(request: Request, call_next):
 @app.on_event("startup")
 async def startup_event():
     """Initialize database and start scheduler"""
-    logger.info("Starting up application...")
+    logger.info("🚀 Starting up application...")
     
-    # Create user table
     try:
-        User.metadata.create_all(bind=engine)
-        logger.info("✅ User table initialized")
+        # Create tables
+        Base.metadata.create_all(bind=engine)
+        logger.info("✅ Database tables initialized")
     except Exception as e:
-        logger.error(f"⚠️ User table initialization failed: {e}")
+        logger.warning(f"⚠️ Database initialization warning: {e}")
     
-    # Initialize database tables
-    try:
-        initialize_db()
-    except Exception as e:
-        logger.error(f"⚠️ Database initialization failed: {e}")
-        logger.info("Continuing without database initialization...")
-    
-    # Seed default courts
-    try:
-        db = SessionLocal()
-        try:
-            seed_courts(db)
-        finally:
-            db.close()
-    except Exception as e:
-        logger.error(f"⚠️ Court seeding failed: {e}")
-    
-    # Start scheduler
-    try:
-        start_scheduler()
-    except Exception as e:
-        logger.error(f"⚠️ Scheduler failed to start: {e}")
-    
-    # Start daily sync scheduler
-    try:
-        karnataka_hc_jobs.start_scheduler()
-    except Exception as e:
-        logger.error(f"⚠️ Karnataka HC scheduler failed: {e}")
-    
-    # Auto-sync to Supabase if configured
-    if os.getenv("SUPABASE_URL") and os.getenv("SUPABASE_ANON_KEY"):
-        logger.info("📡 Starting auto-sync to Supabase...")
-        from app.routes.supabase_sync import sync_to_supabase_internal
-        result = sync_to_supabase_internal()
-        logger.info(f"Supabase sync result: {result}")
-    else:
-        logger.info("⚠️ Supabase not configured - skipping auto-sync")
-    
-    logger.info("Application startup complete")
+    logger.info("✅ Application startup complete")
 
 # Include routers
 app.include_router(auth.router)
-app.include_router(dashboard.router)
-app.include_router(cases.router)
-app.include_router(scraper.router)
-app.include_router(websocket.router)
-app.include_router(karnataka_hc.router)
-app.include_router(supabase_sync.router)
 
-# Scheduler management endpoints
-@app.get("/api/scheduler/status")
-async def get_scheduler_status():
-    """Get current scheduler status and jobs"""
-    return karnataka_hc_jobs.get_scheduler_status()
+# Try to include optional routers
+try:
+    from app.routes import dashboard
+    app.include_router(dashboard.router)
+except ImportError as e:
+    logger.warning(f"Dashboard router not available: {e}")
 
-@app.post("/api/scheduler/sync-now")
-async def trigger_sync_now():
-    """Manually trigger Karnataka HC sync"""
-    result = karnataka_hc_jobs.sync_from_karnataka_hc()
-    return {
-        "status": "completed",
-        "result": result,
-        "message": f"Synced {result.get('synced', 0)} cases from Karnataka HC"
-    }
+try:
+    from app.routes import cases
+    app.include_router(cases.router)
+except ImportError as e:
+    logger.warning(f"Cases router not available: {e}")
 
-@app.post("/api/scheduler/supabase-sync-now")
-async def trigger_supabase_sync_now():
-    """Manually trigger Supabase sync"""
-    result = karnataka_hc_jobs.sync_supabase_daily()
-    return {
-        "status": "completed",
-        "result": result,
-        "message": "Supabase sync completed"
-    }
+try:
+    from app.routes import scraper
+    app.include_router(scraper.router)
+except ImportError as e:
+    logger.warning(f"Scraper router not available: {e}")
 
+try:
+    from app.routes import websocket
+    app.include_router(websocket.router)
+except ImportError as e:
+    logger.warning(f"Websocket router not available: {e}")
+
+try:
+    from app.routes import karnataka_hc
+    app.include_router(karnataka_hc.router)
+except ImportError as e:
+    logger.warning(f"Karnataka HC router not available: {e}")
+
+try:
+    from app.routes import supabase_sync
+    app.include_router(supabase_sync.router)
+except ImportError as e:
+    logger.warning(f"Supabase sync router not available: {e}")
+
+# Health check endpoint
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
