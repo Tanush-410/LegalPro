@@ -6,8 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import logging
 import os
-from app.routes import auth
-from app.database import engine, Base
+from .routes import auth
+from .database import engine, Base
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -61,37 +61,37 @@ app.include_router(auth.router)
 
 # Try to include optional routers
 try:
-    from app.routes import dashboard
+    from .routes import dashboard
     app.include_router(dashboard.router)
 except ImportError as e:
     logger.warning(f"Dashboard router not available: {e}")
 
 try:
-    from app.routes import cases
+    from .routes import cases
     app.include_router(cases.router)
 except ImportError as e:
     logger.warning(f"Cases router not available: {e}")
 
 try:
-    from app.routes import scraper
+    from .routes import scraper
     app.include_router(scraper.router)
 except ImportError as e:
     logger.warning(f"Scraper router not available: {e}")
 
 try:
-    from app.routes import websocket
+    from .routes import websocket
     app.include_router(websocket.router)
 except ImportError as e:
     logger.warning(f"Websocket router not available: {e}")
 
 try:
-    from app.routes import karnataka_hc
+    from .routes import karnataka_hc
     app.include_router(karnataka_hc.router)
 except ImportError as e:
     logger.warning(f"Karnataka HC router not available: {e}")
 
 try:
-    from app.routes import supabase_sync
+    from .routes import supabase_sync
     app.include_router(supabase_sync.router)
 except ImportError as e:
     logger.warning(f"Supabase sync router not available: {e}")

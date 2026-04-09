@@ -3,7 +3,7 @@ Scraper control routes
 """
 from fastapi import APIRouter, BackgroundTasks
 from datetime import datetime
-from app.scheduler.jobs import scrape_court_documents
+from ..scheduler.jobs import scrape_court_documents
 
 router = APIRouter(prefix="/api/scrape", tags=["scraper"])
 

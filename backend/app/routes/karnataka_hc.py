@@ -7,8 +7,8 @@ from fastapi import APIRouter, HTTPException, Query
 from typing import List, Optional
 import logging
 
-from app.supabase_manager import get_supabase_manager, SUPABASE_AVAILABLE
-from app.scheduler.karnataka_hc_jobs import get_karnataka_hc_statistics
+from ..supabase_manager import get_supabase_manager, SUPABASE_AVAILABLE
+from ..scheduler.karnataka_hc_jobs import get_karnataka_hc_statistics
 
 logger = logging.getLogger(__name__)
 

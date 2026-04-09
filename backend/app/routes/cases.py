@@ -5,12 +5,12 @@ from fastapi import APIRouter, Depends, Query, HTTPException, Response
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session, joinedload
 from typing import List
-from app.database import get_db
-from app.models import Case, Judgment, Document
-from app.schemas import CaseResponse, JudgmentResponse, DocumentResponse
-from app.utils.pdf_report import build_case_report_pdf
-from app.utils.case_ai import summarize_case, find_similar_cases
-from app.case_types import get_case_type_info
+from ..database import get_db
+from ..models import Case, Judgment, Document
+from ..schemas import CaseResponse, JudgmentResponse, DocumentResponse
+from ..utils.pdf_report import build_case_report_pdf
+from ..utils.case_ai import summarize_case, find_similar_cases
+from ..case_types import get_case_type_info
 import requests
 
 router = APIRouter(prefix="/api", tags=["cases"])

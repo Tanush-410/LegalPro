@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
 import uuid
-from app.database import Base
+from .database import Base
 
 class CourtEnum(str, enum.Enum):
     SUPREME = "Supreme Court"

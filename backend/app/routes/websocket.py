@@ -4,8 +4,8 @@ Clients can connect and receive live notifications when new cases are detected
 """
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
-from app.database import SessionLocal
-from app.models import Case
+from ..database import SessionLocal
+from ..models import Case
 import logging
 import json
 from datetime import datetime

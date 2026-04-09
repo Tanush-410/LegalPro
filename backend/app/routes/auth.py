@@ -9,8 +9,8 @@ import jwt
 import os
 import json
 from typing import Optional
-from app.database import get_db
-from app.models import User
+from ..database import get_db
+from ..models import User
 import hashlib
 import requests
 

@@ -5,10 +5,10 @@ from fastapi import APIRouter, Depends, BackgroundTasks, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from datetime import datetime, timedelta
-from app.database import get_db
-from app.models import Case, Judgment, Court, ScrapeLog, CourtEnum
-from app.schemas import DashboardStats
-from app.scheduler.jobs import scrape_court_documents
+from ..database import get_db
+from ..models import Case, Judgment, Court, ScrapeLog, CourtEnum
+from ..schemas import DashboardStats
+from ..scheduler.jobs import scrape_court_documents
 
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
 
