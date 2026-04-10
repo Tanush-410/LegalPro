@@ -20,9 +20,10 @@ COPY . /app
 
 # Set Python path explicitly
 ENV PYTHONPATH=/app
+ENV PYTHONUNBUFFERED=1
 
 # Expose port
 EXPOSE 8000
 
-# Run application with explicit Python path
-CMD ["sh", "-c", "PYTHONPATH=/app python -m uvicorn backend.app.main:app --host 0.0.0.0 --port 8000"]
+# Run application
+CMD ["python", "-m", "uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
