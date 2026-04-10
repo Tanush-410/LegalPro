@@ -1,6 +1,6 @@
 FROM python:3.10
 
-# Cache bust: 2026-04-10-install-deps-v2
+# Cache bust: 2026-04-10-apscheduler-only
 
 WORKDIR /app
 
