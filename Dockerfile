@@ -1,5 +1,7 @@
 FROM python:3.10
 
+# Railway rebuild trigger - force fresh build
+
 WORKDIR /app
 
 # Copy requirements first
