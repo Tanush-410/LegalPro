@@ -18,6 +18,9 @@ RUN pip install --no-cache-dir -r requirements.txt && \
 # Copy entire application code
 COPY . /app
 
+# Create data directory for SQLite database
+RUN mkdir -p /app/data && chmod 755 /app/data
+
 # Set Python path explicitly
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
