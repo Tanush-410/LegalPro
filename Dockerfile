@@ -4,10 +4,10 @@ WORKDIR /app
 
 RUN apt-get update --fix-missing && apt-get install -y postgresql-client && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt /tmp/
-RUN python -m pip install --no-cache-dir -r /tmp/requirements.txt
-
 COPY . .
+
+RUN pip install --no-cache-dir -r requirements.txt
+
 RUN mkdir -p data
 
 ENV PYTHONUNBUFFERED=1
