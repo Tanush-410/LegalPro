@@ -106,31 +106,44 @@ def get_current_user(authorization: Optional[str] = Header(None), db: Session = 
 @router.post("/login", response_model=LoginResponse)
 async def login(request: LoginRequest, db: Session = Depends(get_db)):
     """Login with email and password"""
-    user = db.query(User).filter(User.email == request.email).first()
+    import logging
+    logger = logging.getLogger(__name__)
     
-    if not user or not verify_password(request.password, user.password_hash):
-        # For demo: create user if not exists
-        if not user:
-            user = User(
-                email=request.email,
-                name=request.email.split('@')[0],
-                password_hash=hash_password(request.password)
-            )
-            db.add(user)
-            db.commit()
-            db.refresh(user)
+    logger.info(f"[LOGIN] Starting login for email: {request.email}")
     
-    # Update last login
-    user.last_login = datetime.utcnow()
-    db.commit()
-    
-    # Generate JWT token
-    token = create_access_token(user.id)
-    
-    return LoginResponse(
-        token=token,
-        user=UserResponse.from_orm(user)
-    )
+    try:
+        logger.info("[LOGIN] Querying database for user...")
+        user = db.query(User).filter(User.email == request.email).first()
+        logger.info(f"[LOGIN] User query complete. User found: {user is not None}")
+        
+        if not user or not verify_password(request.password, user.password_hash):
+            logger.info("[LOGIN] Creating new user for demo mode...")
+            if not user:
+                user = User(
+                    email=request.email,
+                    name=request.email.split('@')[0],
+                    password_hash=hash_password(request.password)
+                )
+                db.add(user)
+                db.commit()
+                logger.info("[LOGIN] New user created")
+                db.refresh(user)
+        
+        logger.info("[LOGIN] Updating last login timestamp...")
+        user.last_login = datetime.utcnow()
+        db.commit()
+        
+        logger.info("[LOGIN] Generating JWT token...")
+        token = create_access_token(user.id)
+        logger.info("[LOGIN] Login successful, returning token")
+        
+        return LoginResponse(
+            token=token,
+            user=UserResponse.from_orm(user)
+        )
+    except Exception as e:
+        logger.error(f"[LOGIN] Error during login: {type(e).__name__}: {e}", exc_info=True)
+        raise
 
 @router.post("/google", response_model=LoginResponse)
 async def google_login(request: GoogleLoginRequest, db: Session = Depends(get_db)):
