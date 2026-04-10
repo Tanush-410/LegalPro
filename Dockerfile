@@ -1,6 +1,6 @@
 FROM python:3.10
 
-# Railway rebuild trigger - force fresh build
+# Cache bust: 2026-04-10-install-deps-v2
 
 WORKDIR /app
 
