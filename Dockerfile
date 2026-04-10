@@ -14,8 +14,8 @@ RUN mkdir -p data
 
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/app
-ENV PORT=8000
+ENV PORT=3000
 
-EXPOSE 8000
+EXPOSE 3000
 
 CMD ["/app/railway-start.sh"]
