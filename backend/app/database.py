@@ -2,18 +2,28 @@ from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker, declarative_base
 from dotenv import load_dotenv
 import os
+import sys
 
 load_dotenv()
 
 # Default to data directory for SQLite
 # Use relative path that works on any system
 _db_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data")
-os.makedirs(_db_dir, exist_ok=True)
+
+# Ensure directory exists
+try:
+    os.makedirs(_db_dir, exist_ok=True)
+    os.chmod(_db_dir, 0o755)
+except Exception as e:
+    print(f"ERROR: Could not create data directory {_db_dir}: {e}", file=sys.stderr)
+    raise
+
 _db_file = os.path.join(_db_dir, "court_ecosystem.db")
-# Use sqlite:// with absolute path
-# For absolute paths on Unix, the format is: sqlite:////absolute/path
-# The four slashes are: sqlite:// (scheme) + // (authority) + /absolute/path
+# Use sqlite:/// with absolute path (3 slashes for path starting with /)
 DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{_db_file}")
+
+print(f"[DATABASE] Using database: {_db_file}", file=sys.stderr)
+print(f"[DATABASE] Database URL: {DATABASE_URL}", file=sys.stderr)
 
 # Configure engine based on database type
 if DATABASE_URL.startswith("sqlite"):
