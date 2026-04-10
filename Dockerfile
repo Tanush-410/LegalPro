@@ -1,28 +1,24 @@
-FROM python:3.10-slim
+FROM python:3.10
 
 WORKDIR /app
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
-    postgresql-client \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y postgresql-client && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements and install
+# Copy and install requirements
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip setuptools && pip install -r requirements.txt
 
-# Copy entire application code
-COPY . /app
+# Copy application
+COPY . .
 
-# Create data directory for SQLite database
-RUN mkdir -p /app/data && chmod 755 /app/data
+# Create data directory
+RUN mkdir -p data
 
-# Set Python path explicitly
-ENV PYTHONPATH=/app
+# Set environment
 ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app
 
-# Expose port
 EXPOSE 8000
 
-# Run application with explicit error handling
-CMD ["python", "-m", "uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000", "--log-level", "info"]
+CMD exec uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
