@@ -6,6 +6,8 @@ RUN apt-get update --fix-missing && apt-get install -y postgresql-client && apt-
 
 COPY . .
 
+RUN chmod +x /app/railway-start.sh
+
 RUN pip install --no-cache-dir -r requirements.txt
 
 RUN mkdir -p data
@@ -16,4 +18,4 @@ ENV PORT=8000
 
 EXPOSE 8000
 
-CMD ["python", "-m", "uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["/app/railway-start.sh"]
