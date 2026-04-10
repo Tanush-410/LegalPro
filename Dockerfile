@@ -1,20 +1,16 @@
-FROM python:3.10
+FROM python:3.9-slim
 
-# Cache bust: 2026-04-10-apscheduler-only
+ENV BUILD_DATE=2026-04-10-v3
 
 WORKDIR /app
 
-# Copy requirements first
+RUN apt-get update && apt-get install -y postgresql-client && rm -rf /var/lib/apt/lists/*
+
 COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Install dependencies
-RUN pip install -r requirements.txt
-
-# Copy everything else
 COPY . .
-
-# Ensure data directory exists
-RUN mkdir -p /app/data
+RUN mkdir -p data
 
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/app
