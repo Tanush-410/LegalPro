@@ -3,10 +3,12 @@ services:
     name: legalpro
     env: python
     plan: free
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install --no-cache-dir --upgrade pip setuptools && pip install --no-cache-dir -r requirements.txt
     startCommand: python -m uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
     envVars:
       - key: PYTHONUNBUFFERED
         value: "1"
       - key: PYTHONPATH
         value: "/opt/render/project/src"
+      - key: PIP_NO_CACHE_DIR
+        value: "1"
