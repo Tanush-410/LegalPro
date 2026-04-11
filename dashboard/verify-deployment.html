@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>VERIFY DEPLOYMENT - Build ID: f09f257</title>
+</head>
+<body>
+    <h1>✅ Vercel Deployment Verified!</h1>
+    <p>Commit: f09f257</p>
+    <p>This file proves Vercel deployed the latest code.</p>
+    <button onclick="testAPI()">Test Backend Connection</button>
+    <pre id="result"></pre>
+    
+    <script>
+        async function testAPI() {
+            try {
+                const result = await fetch('https://legalpro-ry3o.onrender.com/health');
+                const data = await result.json();
+                document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+            } catch(e) {
+                document.getElementById('result').textContent = 'ERROR: ' + e.message;
+            }
+        }
+    </script>
+</body>
+</html>
