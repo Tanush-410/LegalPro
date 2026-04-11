@@ -96,6 +96,13 @@ try:
 except ImportError as e:
     logger.warning(f"Supabase sync router not available: {e}")
 
+try:
+    from .routes import seed_data
+    app.include_router(seed_data.router)
+except ImportError as e:
+    logger.warning(f"Seed data router not available: {e}")
+
+
 # Health check endpoint
 @app.get("/health")
 async def health_check():
