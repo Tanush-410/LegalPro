@@ -1,18 +1,4 @@
 {
   "buildCommand": "echo 'Static frontend only'",
-  "outputDirectory": "./dashboard",
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
-      ]
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "https://legalpro-ry3o.onrender.com/api/$1"
-    }
-  ]
+  "outputDirectory": "./dashboard"
 }
