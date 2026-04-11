@@ -1,4 +1,5 @@
 {
-  "buildCommand": "echo 'Static frontend only'",
-  "outputDirectory": "./dashboard"
+  "buildCommand": "ls -la ./dashboard && echo 'Dashboard files verified'",
+  "outputDirectory": "./dashboard",
+  "public": true
 }
