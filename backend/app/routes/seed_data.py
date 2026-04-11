@@ -88,8 +88,7 @@ async def populate_demo_data():
             court = Court(
                 name="Karnataka High Court",
                 level=CourtEnum.HIGH,
-                state="Karnataka",
-                established_year=1884
+                state="Karnataka"
             )
             db.add(court)
             db.commit()
