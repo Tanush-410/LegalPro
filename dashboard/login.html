@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- FORCE_REBUILD_V5 -->
 <!-- Version: 2.1 - Connect to Render Backend -->
 <html lang="en">
 <head>
@@ -475,7 +476,8 @@
                 }
             } catch (error) {
                 console.error('Login error:', error);
-                errorMsg.textContent = '✗ Connection error. Please try again.';
+                console.log('API_BASE_URL:', API_BASE_URL);
+                errorMsg.textContent = `✗ Connection error: ${API_BASE_URL}`;
                 errorMsg.style.display = 'block';
             } finally {
                 spinner.style.display = 'none';
