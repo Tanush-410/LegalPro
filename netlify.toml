@@ -1,0 +1,26 @@
+# Netlify Configuration for LegalPro Court Ecosystem
+
+[build]
+  # No build command needed - we're serving static HTML files
+  command = ""
+  # Publish the dashboard directory
+  publish = "dashboard"
+
+[build.environment]
+  # Ensure static asset caching is enabled
+  NODE_ENV = "production"
+
+# Redirect rules for SPA
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  force = false
+  conditions = { Language = ["en"], Country = ["US"] }
+
+# API proxy rules (optional, in case we need them)
+[[redirects]]
+  from = "/api/*"
+  to = "https://legalpro-ry3o.onrender.com/api/:splat"
+  status = 200
+  force = true
