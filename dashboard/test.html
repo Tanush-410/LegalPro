@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test - LegalPro</title>
+    <style>
+        body { font-family: Arial; margin: 40px; }
+        .success { color: green; }
+        .error { color: red; }
+        button { padding: 10px 20px; cursor: pointer; }
+        pre { background: #f0f0f0; padding: 15px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+<h1>🧪 Backend API Test</h1>
+<button onclick="testBackend()">Test Backend</button>
+<button onclick="testCases()">Test Cases Data</button>
+<button onclick="testLogin()">Test Login</button>
+<div id="results"></div>
+
+<script>
+const BACKEND_URL = 'https://legalpro-ry3o.onrender.com';
+
+async function testBackend() {
+    try {
+        const res = await fetch(`${BACKEND_URL}/health`);
+        const data = await res.json();
+        display(`✅ Health Check: ${JSON.stringify(data)}`);
+    } catch (e) {
+        display(`❌ Error: ${e.message}`);
+    }
+}
+
+async function testCases() {
+    try {
+        const res = await fetch(`${BACKEND_URL}/api/cases`);
+        const data = await res.json();
+        display(`✅ Found ${data.length} cases`);
+        if (data.length > 0) {
+            display(`First case: ${JSON.stringify(data[0], null, 2)}`);
+        }
+    } catch (e) {
+        display(`❌ Error: ${e.message}`);
+    }
+}
+
+async function testLogin() {
+    try {
+        const res = await fetch(`${BACKEND_URL}/api/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: 'test@example.com', password: 'test' })
+        });
+        const data = await res.json();
+        display(`✅ Login Response: ${JSON.stringify(data, null, 2)}`);
+    } catch (e) {
+        display(`❌ Error: ${e.message}`);
+    }
+}
+
+function display(msg) {
+    const results = document.getElementById('results');
+    results.innerHTML += `<p><pre>${msg}</pre></p>`;
+}
+</script>
+</body>
+</html>
