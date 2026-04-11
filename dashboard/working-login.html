@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LegalPro - Working Login</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; margin: 0; }
+        .card { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); max-width: 400px; width: 90%; }
+        h1 { color: #667eea; margin: 0 0 10px 0; font-size: 32px; }
+        p { color: #999; margin: 0 0 30px 0; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #333; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; box-sizing: border-box; }
+        input:focus { outline: none; border-color: #667eea; }
+        button { width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        button:disabled { opacity: 0.7; cursor: not-allowed; }
+        .message { margin-top: 20px; padding: 12px; border-radius: 5px; display: none; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; padding: 12px; margin-top: 20px; border-radius: 5px; font-size: 12px; }
+        .status { margin-top: 20px; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>LEGAL PRO</h1>
+        <p>Instant Access | Render Backend</p>
+        
+        <form id="form">
+            <div class="form-group">
+                <label>Email:</label>
+                <input type="email" id="email" value="demo@test.io" required>
+            </div>
+            <div class="form-group">
+                <label>Password:</label>
+                <input type="password" id="password" value="test" required>
+            </div>
+            <button type="submit" id="btn">Login</button>
+        </form>
+
+        <div class="message success" id="success"></div>
+        <div class="message error" id="error"></div>
+        <div class="info">Demo Mode: Any email/password works. Accounts created automatically.</div>
+        <div class="status" id="status"></div>
+    </div>
+
+    <script>
+const BACKEND = 'https://legalpro-ry3o.onrender.com';
+document.getElementById('form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('btn');
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    
+    btn.disabled = true;
+    btn.textContent = 'Logging in...';
+    document.getElementById('error').style.display = 'none';
+    document.getElementById('success').style.display = 'none';
+    document.getElementById('status').innerHTML = '🔄 Connecting to ' + BACKEND + '...';
+    
+    try {
+        const res = await fetch(`${BACKEND}/api/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        
+        const data = await res.json();
+        
+        if (res.ok) {
+            document.getElementById('success').textContent = '✅ Success! Token: ' + data.token.substring(0, 30) + '...';
+            document.getElementById('success').style.display = 'block';
+            localStorage.setItem('token', data.token);
+            document.getElementById('status').innerHTML = `✅ User: ${data.user.email} | ID: ${data.user.id}`;
+        } else {
+            throw new Error(data.detail || 'Login failed');
+        }
+    } catch (err) {
+        document.getElementById('error').textContent = '❌ ' + err.message;
+        document.getElementById('error').style.display = 'block';
+        document.getElementById('status').innerHTML = '❌ Connection error';
+    }
+    
+    btn.disabled = false;
+    btn.textContent = 'Login';
+});
+    </script>
+</body>
+</html>
